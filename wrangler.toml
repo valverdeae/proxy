@@ -11,3 +11,5 @@ crons = ["0 */6 * * *"]  # Keeps worker warm
 [[r2_buckets]]
 binding = "MY_BUCKET"
 bucket_name = "sonyliv-cache"
+# wrangler.toml
+name = 'proxy'
