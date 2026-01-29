@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SonyLIV Proxy Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .test { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        #result { margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 5px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>SonyLIV Proxy Test</h1>
+    
+    <div class="test">
+        <h3>Test 1: Health Check</h3>
+        <button onclick="testHealth()">Test Health</button>
+        <div id="healthResult"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 2: SonyLIV Stream</h3>
+        <button onclick="testSonyLIV()">Test SonyLIV Proxy</button>
+        <div id="streamResult"></div>
+    </div>
+    
+    <script>
+        const sonyURL = "https://sonydaimenew.akamaized.net/hls/live/2005445/DAI06ME-AO/std_lrh-800300010.m3u8?hdnea=exp=1769706634~acl=/*~id=39889634370869881063204522079007~hmac=5777fdce8ef0f5d55a25f82f022f2d2b59eb04b122b0f74d4e803163ad80861b";
+        
+        async function testHealth() {
+            const result = document.getElementById('healthResult');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                // Try to access the worker directly
+                const response = await fetch('/');
+                result.innerHTML = `✅ Worker responding: ${response.status}`;
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testSonyLIV() {
+            const result = document.getElementById('streamResult');
+            result.innerHTML = 'Testing SonyLIV stream...';
+            
+            const proxyURL = '/proxy?url=' + encodeURIComponent(sonyURL);
+            
+            try {
+                const response = await fetch(proxyURL);
+                const text = await response.text();
+                
+                if (response.ok) {
+                    if (text.includes('#EXTM3U')) {
+                        result.innerHTML = '✅ SUCCESS! SonyLIV stream is accessible via proxy.<br><br>';
+                        result.innerHTML += 'First 200 characters:<br>';
+                        result.innerHTML += `<code>${text.substring(0, 200)}...</code>`;
+                        
+                        // Create player link
+                        const playerURL = `/player.html?url=${encodeURIComponent(proxyURL)}`;
+                        result.innerHTML += `<br><br><a href="${playerURL}" style="background: #28a745; color: white; padding: 10px; border-radius: 5px; text-decoration: none;">🎬 Open Player</a>`;
+                    } else {
+                        result.innerHTML = `⚠️ Got response but not M3U8:<br><code>${text.substring(0, 200)}...</code>`;
+                    }
+                } else {
+                    result.innerHTML = `❌ HTTP ${response.status}: ${text}`;
+                }
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-test on load
+        setTimeout(testHealth, 1000);
+    </script>
+</body>
+</html>
